@@ -53,7 +53,7 @@ public class TFIDF {
 		
 		// Create and execute Word Count job
 		
-			/************ YOUR CODE HERE ************/
+			
 
 		Job j=new Job(conf,"WordCountWithMR");
 		j.setJarByClass(TFIDF.class);
@@ -68,7 +68,7 @@ public class TFIDF {
 			
 		// Create and execute Document Size job
 		
-			/************ YOUR CODE HERE ************/
+		
 		/*Configuration conf2 = new Configuration();
 		FileSystem fs2 = inputPath.getFileSystem(conf2);
         FileStatus[] stat2 = fs2.listStatus(dsInputPath);
@@ -86,7 +86,7 @@ public class TFIDF {
 
 		//Create and execute TFIDF job
 		
-			/************ YOUR CODE HERE ************/
+		
 		
 		j2.waitForCompletion(true);
 		Job j3=new Job(conf,"TFWithMR");
@@ -112,7 +112,7 @@ public class TFIDF {
 	 */
 	public static class WCMapper extends Mapper<Object, Text, Text, IntWritable> {
 		
-		/************ YOUR CODE HERE ************/
+		
 		public void map(Object key, Text value, Context con) throws IOException, InterruptedException
 		{
 			String line = value.toString();
@@ -137,7 +137,7 @@ public class TFIDF {
 	 */
 	public static class WCReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
 		
-		/************ YOUR CODE HERE ************/
+		
 		public void reduce(Text word, Iterable<IntWritable> values, Context con) throws IOException, InterruptedException
 		{
 		int sum = 0;
@@ -158,7 +158,7 @@ public class TFIDF {
 	 */
 	public static class DSMapper extends Mapper<Object, Text, Text, Text> {
 		
-		/************ YOUR CODE HERE ************/
+		
 		//int docCount = new File("/mnt/sdcard/folder").listFiles().length;
 		public void map(Object key, Text inpText, Context con) throws IOException, InterruptedException
 		{
@@ -191,7 +191,7 @@ public class TFIDF {
 	 */
 	public static class DSReducer extends Reducer<Text, Text, Text, Text> {
 		
-		/************ YOUR CODE HERE ************/
+		
 		public void reduce(Text documentKey, Iterable<Text> values, Context con) throws IOException, InterruptedException
 		{
 			int docSize = 0;
@@ -224,7 +224,7 @@ public class TFIDF {
 	 */
 	public static class TFIDFMapper extends Mapper<Object, Text, Text, Text> {
 
-		/************ YOUR CODE HERE ************/
+		
 		public void map(Object key, Text inpText, Context con) throws IOException, InterruptedException
 		{
 			String inpString = inpText.toString();
@@ -268,7 +268,7 @@ public class TFIDF {
 		
 		public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
 			
-			/************ YOUR CODE HERE ************/
+			
 			int numDocsWithWord = 0;
 	 		List<String> inpVals = new ArrayList<String>();
 	 		for(Text value:values){
