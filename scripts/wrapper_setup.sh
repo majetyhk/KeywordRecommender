@@ -1,8 +1,10 @@
 
-pip install --upgrade google-api-python-client
+apt-get install python3-pip
 
-pip install --upgrade google-auth google-auth-oauthlib google-auth-httplib2
+pip3 install --upgrade google-api-python-client
 
-pip install --upgrade flask
+pip3 install --upgrade google-auth google-auth-oauthlib google-auth-httplib2
 
-pip install --upgrade requests
+pip3 install --upgrade flask
+
+pip3 install --upgrade requests
