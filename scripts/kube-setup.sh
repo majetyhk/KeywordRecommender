@@ -1,23 +1,23 @@
-sudo apt-get update && apt-get install -y apt-transport-https
+sudo apt-get update && sudo apt-get install -y apt-transport-https
 
 sudo apt install docker.io
 
 sudo systemctl start docker
 sudo systemctl enable docker
 
-sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add
+sudo curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add
 
 sudo cat > /etc/apt/sources.list.d/kubernetes.list << EOF
 deb http://apt.kubernetes.io/ kubernetes-xenial main 
 EOF
 
-apt-get update
-apt-get install -y kubelet kubeadm kubectl kubernetes-cni
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl kubernetes-cni
 
-swapoff -a && sed -i '/swap/d' /etc/fstab
+sudo swapoff -a && sed -i '/swap/d' /etc/fstab
 
 ## just for master node 
-# ufw disable # disable firewall
+sudo ufw disable # disable firewall
 # kubeadm init --ignore-preflight-errors Swap
 
 #run as normal user
