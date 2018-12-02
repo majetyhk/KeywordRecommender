@@ -2,7 +2,11 @@ import requests
 import json
 import sys
 import os
-os.system("mkdir -p output/")
+from pathlib import Path
+home = str(Path.home())
+
+
+os.system("mkdir -p $HOME/videoJson/")
 size = 100
 inp = sys.argv
 if len(inp)==3:
@@ -31,8 +35,9 @@ while(totalcount>0):
                 data['tags'] = i["snippet"]["tags"]
             data['categoryId'] = i["snippet"]["categoryId"]
             data['statistics'] = i["statistics"]
-            with open('./output/'+i["id"]+'.json', 'w') as outfile:
+            with open(home+'/videoJson/'+i["id"]+'.json', 'w') as outfile:
                 json.dump(data, outfile)
+            os.system("./extractor.sh "+i["id"])
     else:
         break
     url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2Cstatistics&chart=mostPopular&pageToken=" + \
