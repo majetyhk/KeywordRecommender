@@ -9,3 +9,4 @@ This should setup the required environment in your VM.
 
 run the ./extractor.sh < video ID >
 
+example subtitle id - N3SQlrmV1cE, auto subtitle id - k3On6DLPGLA
