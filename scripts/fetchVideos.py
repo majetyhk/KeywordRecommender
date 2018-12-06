@@ -33,10 +33,13 @@ while(totalcount>0):
             if i["contentDetails"]["caption"] == "true":        ## compute only if capions are present
                 data['id'] = i["id"]
                 data['title'] = i["snippet"]["title"]
+                data['publishedAt'] = i["snippet"]["publishedAt"]
+                data['channelTitle'] = i["statistics"]["channelTitle"]
+                data['categoryId'] = i["snippet"]["categoryId"]
                 if 'tags' in i["snippet"]:
                     data['tags'] = i["snippet"]["tags"]
-                data['categoryId'] = i["snippet"]["categoryId"]
                 data['statistics'] = i["statistics"]
+                data['topicDetails'] = i["topicDetails"]
                 with open(home+'/videoJson/'+i["id"]+'.json', 'w') as outfile:
                     json.dump(data, outfile)
                 os.system("./extractor.sh "+i["id"])
