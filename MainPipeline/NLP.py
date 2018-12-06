@@ -9,6 +9,7 @@ from kafka import KafkaConsumer
 from pyspark.mllib.linalg import Vector, Vectors
 # from pyspark.mllib.clustering import LDA, LDAModel
 from pyspark.ml.clustering import LDA as newLDA
+import json
 
 # data = sqlContext.read.format("csv").options(header='true', inferschema='true')\
 #       .load(os.path.realpath("clothingReviews.csv"))
@@ -87,27 +88,41 @@ def getTopics(sc,sqlContext,inpSubtitles):
     return topics_words
 
 def getSubsFromMessage(message):
-    pass
+    valBytes  = message.value
+    decodedValueString = valBytes.decode("utf-8")
+    valueStringModified = decodedValueString.replace("\w+'", '"')
+    print(valueStringModified)
+    #messageJson = json.loads(valueStringModified)
+    #print(messageJson)
+    return valueStringModified
 
 def main():
     kafkaBrokerList = ["152.46.17.189:9092", "152.46.17.100:9092", "152.46.16.167:9092"]
     topicNameList = ["VideoSubtitles"]
     DataReader = ConsumerInstance(kafkaBrokerList, topicNameList).getKafkaConsumer()
     print("Kafka Cluster Connected")
-    sparkInst = SparkInstance()
-    print("Spark Cluster Connected")
+    # sparkInst = SparkInstance()
+    # print("Spark Cluster Connected")
 
     try:
         count = 0
-        for message in DataReader:
-            print(message)
-            # topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, message)
-            print("\n###################----------###################\n")
-            #print(topicsWordArrayList)
+        for record in DataReader:
+            if(record):
+                # print(record.value)
+                # print(message)
+                subs = getSubsFromMessage(record)
+                # topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, message)
+                print("\n###################----------###################\n")
+                count += 1
+            if count > 1:
+                break
+                # print(topicsWordArrayList)
+        # for message in DataReader.poll(max_records=1):
+
     except Exception as e:
         print("Error Occurred: "+str(e))
     finally:
-        sparkInst.closeConnection()
+        # sparkInst.closeConnection()
         DataReader.close()
         print("Spark and Kafka Connections closed!")
 
