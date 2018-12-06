@@ -11,7 +11,8 @@ import os
 from pyspark.ml.feature import CountVectorizer , IDF, Tokenizer
 
 from pyspark.mllib.linalg import Vector, Vectors
-from pyspark.mllib.clustering import LDA, LDAModel
+#from pyspark.mllib.clustering import LDA, LDAModel
+from pyspark.ml.clustering import LDA as newLDA
 
 data = sqlContext.read.format("csv").options(header='true', inferschema='true').load(os.path.realpath("clothingReviews.csv"))
 reviews = data.filter("'Review Text' IS NOT NULL")['Review Text']

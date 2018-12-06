@@ -1,7 +1,8 @@
 from pyspark.sql import SparkSession
 from pyspark import *
 from random import random
-from pyspark.mllib.clustering import LDA, LDAModel
+#from pyspark.mllib.clustering import LDA, LDAModel
+from pyspark.ml.clustering import LDA as newLDA
 from pyspark.mllib.linalg import Vectors
 sparkSess = SparkSession.builder.appName("PythonPi").getOrCreate()
 sc = sparkSess.sparkContext
