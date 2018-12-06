@@ -18,7 +18,8 @@ else:
     print("please input in format -> python script.py 'token'")
     exit()
 
-url ="https://www.googleapis.com/youtube/v3/videos?part=snippet%2Cstatistics&chart=mostPopular&pageToken=&regionCode=US&key="+api_token
+url="https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics%2CtopicDetails&chart=mostPopular&pageToken=&regionCode=US&key="+api_token
+#url ="https://www.googleapis.com/youtube/v3/videos?part=snippet%2Cstatistics&chart=mostPopular&pageToken=&regionCode=US&key="+api_token
 
 mylist = []
 mycounts = {}
@@ -29,17 +30,21 @@ while(totalcount>0):
     jsonObj  = r.json()
     if (r.status_code==200  or r.status_code == 304) and (len(jsonObj)!=0):
         for i in jsonObj["items"]:
-            data['id'] = i["id"]
-            data['title'] = i["snippet"]["title"]
-            if 'tags' in i["snippet"]:
-                data['tags'] = i["snippet"]["tags"]
-            data['categoryId'] = i["snippet"]["categoryId"]
-            data['statistics'] = i["statistics"]
-            with open(home+'/videoJson/'+i["id"]+'.json', 'w') as outfile:
-                json.dump(data, outfile)
-            os.system("./extractor.sh "+i["id"])
+            if i["contentDetails"]["caption"] == "true":        ## compute only if capions are present
+                data['id'] = i["id"]
+                data['title'] = i["snippet"]["title"]
+                data['publishedAt'] = i["snippet"]["publishedAt"]
+                data['channelTitle'] = i["statistics"]["channelTitle"]
+                data['categoryId'] = i["snippet"]["categoryId"]
+                if 'tags' in i["snippet"]:
+                    data['tags'] = i["snippet"]["tags"]
+                data['statistics'] = i["statistics"]
+                data['topicDetails'] = i["topicDetails"]
+                with open(home+'/videoJson/'+i["id"]+'.json', 'w') as outfile:
+                    json.dump(data, outfile)
+                os.system("./extractor.sh "+i["id"])
     else:
         break
-    url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2Cstatistics&chart=mostPopular&pageToken=" + \
+    url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics%2CtopicDetails&chart=mostPopular&pageToken=" + \
           jsonObj["nextPageToken"] + "&regionCode=US&key=" + api_token
     totalcount=totalcount-1
