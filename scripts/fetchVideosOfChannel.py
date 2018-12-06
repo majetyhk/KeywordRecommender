@@ -47,28 +47,26 @@ while(totalcount>0):
         for i in jsonObj["items"]:
                 videoIds += i["id"]["videoId"] +","
         
-        videoIds = videoIds[0:videoIds.len()-1]
-        print(videoIds)
+        videoIds = videoIds[0:len(videoIds)-1]
         # request for video content
         innerurl="https://www.googleapis.com/youtube/v3/videos?id="+videoIds+"&part=snippet,contentDetails,statistics,topicDetails&regionCode=US&key="+api_token
         vr = requests.get(innerurl,headers={"Content-Type": "application/json"})
         videojsonObj = vr.json()
-
-        if (r.status_code==200  or r.status_code == 304) and (len(jsonObj)!=0):
-            for i in jsonObj["items"]:
-                if i["contentDetails"]["caption"] == "true":        ## compute only if capions are present
-                    data['title'] = i["snippet"]["title"]
-                    data['publishedAt'] = i["snippet"]["publishedAt"]
-                    data['channelTitle'] = i["statistics"]["channelTitle"]
-                    data['categoryId'] = i["snippet"]["categoryId"]
-                    if 'tags' in i["snippet"]:
-                        data['tags'] = i["snippet"]["tags"]
-                    data['statistics'] = i["statistics"]
+        if (vr.status_code==200  or vr.status_code == 304) and (len(videojsonObj)!=0):
+            for i in videojsonObj["items"]:
+#                if i["contentDetails"]["caption"] == "true":        ## compute only if capions are present
+                data['title'] = i["snippet"]["title"]
+                data['publishedAt'] = i["snippet"]["publishedAt"]
+                data['channelTitle'] = i["snippet"]["channelTitle"]
+                data['categoryId'] = i["snippet"]["categoryId"]
+                if 'tags' in i["snippet"]:
+                    data['tags'] = i["snippet"]["tags"]
+                data['statistics'] = i["statistics"]
+                if 'topicDetails' in i:
                     data['topicDetails'] = i["topicDetails"]
-                    with open(home+'/videoJson/'+i["id"]+'.json', 'w') as outfile:
-                        json.dump(data, outfile)
-                    os.system("./extractor.sh "+i["id"])
-            
+                with open(home+'/videoJson/'+i["id"]+'.json', 'w') as outfile:
+                    json.dump(data, outfile)
+                os.system("./extractor.sh "+i["id"])
     else:
         break
     outerurl = outerurl="https://www.googleapis.com/youtube/v3/search?key="+api_token+"&channelId="+channel+"&part=id&order=date&maxResults=50&pageToken=" + \
