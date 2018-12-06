@@ -2,6 +2,7 @@ import threading
 import time
 import os
 import json
+import re
 from os.path import expanduser
 
 from kafka import KafkaProducer
@@ -28,6 +29,9 @@ class Producer:
 
     def send(self, msg):
         bmsg = bytes(msg, 'utf-8')
+#        temp = bmsg.decode('utf-8')
+#        temp2 = json.loads(temp.replace("'",'"'))
+#        print(temp2)
         self.producer.send(self.myTopic, bmsg)
     
 
@@ -54,12 +58,12 @@ def main():
                     meta = json.load(f)
 
                 loadObject['meta'] = meta
-                loadObject['extract'] = parsed
+                loadObject['extract'] = re.sub("[^a-zA-Z\s]", "", parsed)	#regex to retain just a-zA-Z and spaces in parsed string, to remove ',"
                 
-                re = repr(loadObject)     # converts dictionary to string
+                red = repr(loadObject)     # converts dictionary to string
                 #now = json.loads(re)       $ viceversa string to dictionary
                 print("sending data to kafka"+str(file))
-                dataLoader.send(re)
+                dataLoader.send(red)
 
         except Exception as e:
             print("No files found here!")
