@@ -31,7 +31,7 @@ class Consumer(multiprocessing.Process):
 
 def main():
     kafkaBrokerList = ["152.46.17.189:9092", "152.46.17.100:9092", "152.46.16.167:9092"]
-    topicNameList = ["SampleTestTopic"]
+    topicNameList = ["VideoSubtitles"]
     DataReader = Consumer(kafkaBrokerList,topicNameList)
 
     try:
