@@ -35,7 +35,7 @@ outerurl="https://www.googleapis.com/youtube/v3/search?key="+api_token+"&type=vi
 innerurl="https://www.googleapis.com/youtube/v3/videos?id=Ks-_Mh1QhMc,c0KYU2j0TM4,eIho2S0ZahI&part=snippet,contentDetails,statistics,topicDetails&regionCode=US&key=APIKEY"
 mylist = []
 mycounts = {}
-totalcount = (int(size)/50)%200
+totalcount = (int(size)/5)
 data ={}
 while(totalcount>0):
     r = requests.get(outerurl,headers={"Content-Type": "application/json"})
