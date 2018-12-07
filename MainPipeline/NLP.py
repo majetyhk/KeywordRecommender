@@ -56,7 +56,10 @@ def getTopics(sc,sqlContext,inpSubtitles):
     inpData = sc.parallelize(myInp.splitlines())
     # myInpSplittedList = inpData.map(lambda x: x.split('\n') )
     # res = myInpSplittedList.collect()
-    row_rdd = inpData.map(lambda x: x.split(" ")).map(lambda x: Row(x))
+    row_rdd = inpData.map(lambda x: re.sub("\s+"," ",x))\
+        .map(lambda x: x.split(" "))\
+        .map(lambda x: [word for word in x if word is not ''])\
+        .map(lambda x: Row(x))
     df = sqlContext.createDataFrame(row_rdd, ['allWords'])
     mainDf = df.withColumn("index", monotonically_increasing_id())
 
@@ -128,22 +131,31 @@ def main():
             if(record):
                 # print(record.value)
                 # print(message)
-                subsMetaDict = getSubsMetaFromRecord(record)
+                try:
+                    subsMetaDict = getSubsMetaFromRecord(record)
+                except:
+                    print("Error in Parsing input from Kafka "+record.value)
+                    print("\n###################----------###################\n")
+                    continue
                 print(subsMetaDict['meta'])
                 topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, subsMetaDict['extract'])
                 topKeywordsList = getTopKeywordsFromTopics(topicsWordArrayList)
                 print(topKeywordsList)
-                print("\n###################----------###################\n")
+
                 doc = {}
                 doc['meta'] = subsMetaDict['meta']
                 doc['keywords'] = topKeywordsList
-                res = es.index(index="test-index", doc_type='test', id=1, body=doc)
+                metaDat = doc['meta']
+                ind = metaDat['id']
+                # print(ind)
+                res = es.index(index="keywordrecommender", doc_type='keywords', id = ind, body=doc)
                 print(res['result'])
-                count += 1
-            if count > 2:
-                break
+                print("\n###################----------###################\n")
+                # count += 1
+                # if count > 2:
+                #     break
                 # print(topicsWordArrayList)
-        # for message in DataReader.poll(max_records=1):
+                # for message in DataReader.poll(max_records=1):
     except Exception as e:
         print("Error Occurred: "+str(e))
     finally:
