@@ -10,6 +10,8 @@ from pyspark.mllib.linalg import Vector, Vectors
 # from pyspark.mllib.clustering import LDA, LDAModel
 from pyspark.ml.clustering import LDA as newLDA
 import json
+from datetime import datetime
+from elasticsearch import Elasticsearch
 
 # data = sqlContext.read.format("csv").options(header='true', inferschema='true')\
 #       .load(os.path.realpath("clothingReviews.csv"))
@@ -54,7 +56,10 @@ def getTopics(sc,sqlContext,inpSubtitles):
     inpData = sc.parallelize(myInp.splitlines())
     # myInpSplittedList = inpData.map(lambda x: x.split('\n') )
     # res = myInpSplittedList.collect()
-    row_rdd = inpData.map(lambda x: x.split(" ")).map(lambda x: Row(x))
+    row_rdd = inpData.map(lambda x: re.sub("\s+"," ",x))\
+        .map(lambda x: x.split(" "))\
+        .map(lambda x: [word for word in x if word is not ''])\
+        .map(lambda x: Row(x))
     df = sqlContext.createDataFrame(row_rdd, ['allWords'])
     mainDf = df.withColumn("index", monotonically_increasing_id())
 
@@ -63,7 +68,7 @@ def getTopics(sc,sqlContext,inpSubtitles):
     cv = CountVectorizer(inputCol="words", outputCol="features")
     model = cv.fit(res)  # even df works
     result = model.transform(res)
-    result.show(truncate=False)
+    #result.show(truncate=False)
 
     idf = IDF(inputCol="features", outputCol="finalFeatures")
     idfModel = idf.fit(result)
@@ -72,7 +77,7 @@ def getTopics(sc,sqlContext,inpSubtitles):
     # lda_model = LDA.train(result_tfidf['index','finalFeatures'],k = num_topics, maxIterations= 100)
     lda_obj = newLDA(featuresCol="finalFeatures", k=3, maxIter=100)
     lda_model = lda_obj.fit(result_tfidf["index", "finalFeatures"])
-    lda_model.describeTopics().show()
+    #lda_model.describeTopics().show()
     topics = lda_model.describeTopics()
     topics_rdd = topics.rdd
     vocab = model.vocabulary
@@ -87,22 +92,38 @@ def getTopics(sc,sqlContext,inpSubtitles):
     #     print("----------")
     return topics_words
 
-def getSubsFromMessage(message):
+def getSubsMetaFromRecord(message):
     valBytes  = message.value
     decodedValueString = valBytes.decode("utf-8")
-    valueStringModified = decodedValueString.replace("\w+'", '"')
-    print(valueStringModified)
-    #messageJson = json.loads(valueStringModified)
+    valueStringModified = decodedValueString.replace("'", '"')
+    #print(valueStringModified)
+    valueJson = json.loads(valueStringModified)
     #print(messageJson)
-    return valueStringModified
+    return valueJson
+
+def getTopKeywordsFromTopics(inpTopics):
+    topKeywordList =  []
+    for topic in inpTopics:
+        topKeywordList.extend(topic[0:3])
+
+    return topKeywordList
+
 
 def main():
     kafkaBrokerList = ["152.46.17.189:9092", "152.46.17.100:9092", "152.46.16.167:9092"]
     topicNameList = ["VideoSubtitles"]
     DataReader = ConsumerInstance(kafkaBrokerList, topicNameList).getKafkaConsumer()
     print("Kafka Cluster Connected")
-    # sparkInst = SparkInstance()
-    # print("Spark Cluster Connected")
+    sparkInst = SparkInstance()
+    print("Spark Cluster Connected")
+    es = Elasticsearch(
+        ['https://a58c0275b4c1417bb6316d68575d3f85.us-east-1.aws.found.io:9243'],
+        http_auth=('elastic', 'B7Zck6OCKO1cQ85ftjlqNE7W'),
+        scheme="https",
+        port=443,
+    )
+    print("Elasticsearch Connected")
+
 
     try:
         count = 0
@@ -110,20 +131,37 @@ def main():
             if(record):
                 # print(record.value)
                 # print(message)
-                subs = getSubsFromMessage(record)
-                # topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, message)
-                print("\n###################----------###################\n")
-                count += 1
-            if count > 1:
-                break
-                # print(topicsWordArrayList)
-        # for message in DataReader.poll(max_records=1):
+                try:
+                    subsMetaDict = getSubsMetaFromRecord(record)
+                except:
+                    print("Error in Parsing input from Kafka "+record.value)
+                    print("\n###################----------###################\n")
+                    continue
+                print(subsMetaDict['meta'])
+                topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, subsMetaDict['extract'])
+                topKeywordsList = getTopKeywordsFromTopics(topicsWordArrayList)
+                print(topKeywordsList)
 
+                doc = {}
+                doc['meta'] = subsMetaDict['meta']
+                doc['keywords'] = topKeywordsList
+                metaDat = doc['meta']
+                ind = metaDat['id']
+                # print(ind)
+                res = es.index(index="keywordrecommender", doc_type='keywords', id = ind, body=doc)
+                print(res['result'])
+                print("\n###################----------###################\n")
+                # count += 1
+                # if count > 2:
+                #     break
+                # print(topicsWordArrayList)
+                # for message in DataReader.poll(max_records=1):
     except Exception as e:
         print("Error Occurred: "+str(e))
     finally:
         # sparkInst.closeConnection()
         DataReader.close()
+        # es.close()
         print("Spark and Kafka Connections closed!")
 
 #sc.stop()
