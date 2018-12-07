@@ -12,6 +12,7 @@ from pyspark.ml.clustering import LDA as newLDA
 import json
 from datetime import datetime
 from elasticsearch import Elasticsearch
+import time
 
 # data = sqlContext.read.format("csv").options(header='true', inferschema='true')\
 #       .load(os.path.realpath("clothingReviews.csv"))
@@ -126,36 +127,38 @@ def main():
 
 
     try:
-        count = 0
-        for record in DataReader:
-            if(record):
-                # print(record.value)
-                # print(message)
-                try:
-                    subsMetaDict = getSubsMetaFromRecord(record)
-                except:
-                    print("Error in Parsing input from Kafka "+record.value.decode("utf-8"))
-                    print("\n###################----------###################\n")
-                    continue
-                print(subsMetaDict['meta'])
-                topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, subsMetaDict['extract'])
-                topKeywordsList = getTopKeywordsFromTopics(topicsWordArrayList)
-                print(topKeywordsList)
+        while True:
+            for record in DataReader:
+                if(record):
+                    # print(record.value)
+                    # print(message)
+                    try:
+                        subsMetaDict = getSubsMetaFromRecord(record)
+                    except:
+                        print("Error in Parsing input from Kafka "+record.value.decode("utf-8"))
+                        print("\n###################----------###################\n")
+                        continue
+                    print(subsMetaDict['meta'])
+                    topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, subsMetaDict['extract'])
+                    topKeywordsList = getTopKeywordsFromTopics(topicsWordArrayList)
+                    print(topKeywordsList)
 
-                doc = {}
-                doc['meta'] = subsMetaDict['meta']
-                doc['keywords'] = topKeywordsList
-                metaDat = doc['meta']
-                ind = metaDat['id']
-                # print(ind)
-                res = es.index(index="keywordrecommender", doc_type='keywords', id = ind, body=doc)
-                print(res['result'])
-                print("\n###################----------###################\n")
-                # count += 1
-                # if count > 2:
-                #     break
-                # print(topicsWordArrayList)
-                # for message in DataReader.poll(max_records=1):
+                    doc = {}
+                    doc['meta'] = subsMetaDict['meta']
+                    doc['keywords'] = topKeywordsList
+                    metaDat = doc['meta']
+                    ind = metaDat['id']
+                    # print(ind)
+                    res = es.index(index="keywordrecommender", doc_type='keywords', id = ind, body=doc)
+                    print(res['result'])
+                    print("\n###################----------###################\n")
+                    # count += 1
+                    # if count > 2:
+                    #     break
+                    # print(topicsWordArrayList)
+                    # for message in DataReader.poll(max_records=1):
+            print("Buffer Empty. Wait for 10 min to try again")
+            time.sleep(600)
     except Exception as e:
         print("Error Occurred: "+str(e))
     finally:
