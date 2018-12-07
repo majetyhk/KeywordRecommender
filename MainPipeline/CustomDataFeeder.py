@@ -53,6 +53,7 @@ def main():
             loadObject = {}
             if file.endswith(".txt"):
                 abspath = textpath+file
+                print(abspath)
                 with open(abspath) as f:
                     parsed = f.read()       #json.load(f)
                 
