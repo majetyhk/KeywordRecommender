@@ -69,7 +69,7 @@ while(totalcount>0):
                     data['topicDetails'] = i["topicDetails"]
                 with open(home+'/videoJson/'+i["id"]+'.json', 'w') as outfile:
                     json.dump(data, outfile)
-                os.system("./extractor.sh "+i["id"])
+                os.system("sh $HOME/Keyword_Recommender/scripts/extractor.sh "+i["id"])
     else:
         break
     if 'nextPageToken' not in jsonObj:
