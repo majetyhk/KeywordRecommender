@@ -9,16 +9,13 @@ home = str(Path.home())
 os.system("mkdir -p $HOME/videoJson/")
 size = 10000
 inp = sys.argv
-if len(inp)==4:
+if len(inp)==3:
     api_token=inp[1]
-    channel = inp[2]
-    size = inp[3]
-elif len(inp)==3:
+    size = inp[2]
+elif len(inp)==2:
     api_token = inp[1]
-    channel = inp[2]
 else:
-    print("please input in format -> python script.py 'token' 'channel_id' '{optional - size}'")
-    print("example channel - UCsT0YIqwnpJCM-mx7-gSA4Q")
+    print("please input in format -> python script.py 'token'")
     exit()
 
 ######
