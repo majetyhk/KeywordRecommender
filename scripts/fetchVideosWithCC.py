@@ -18,9 +18,9 @@ else:
     print("please input in format -> python script.py 'token'")
     exit()
 
-outerurl="https://www.googleapis.com/youtube/v3/search?key="+api_token+"&part=id&type=video&videoCaption=closedCaption&regionCode=US"
+outerurl="https://www.googleapis.com/youtube/v3/search?key="+api_token+"&q=america&part=id&type=video&videoCaption=closedCaption&regionCode=US"
 innerurl="https://www.googleapis.com/youtube/v3/videos?id=Ks-_Mh1QhMc,c0KYU2j0TM4,eIho2S0ZahI&part=snippet,contentDetails,statistics,topicDetails&regionCode=US&key=APIKEY"
-print(outerurl)
+
 mylist = []
 mycounts = {}
 totalcount = (int(size)/5)
@@ -51,7 +51,6 @@ while(totalcount>0):
                 data['statistics'] = i["statistics"]
                 if 'topicDetails' in i:
                     data['topicDetails'] = i["topicDetails"]
-                print(data)
                 with open(home+'/videoJson/'+i["id"]+'.json', 'w') as outfile:
                     json.dump(data, outfile)
                 os.system("./extractor.sh "+i["id"])
@@ -62,3 +61,4 @@ while(totalcount>0):
     outerurl = outerurl="https://www.googleapis.com/youtube/v3/search?key="+api_token+"&part=id&type=video&videoCaption=closedCaption&pageToken=" + \
           jsonObj["nextPageToken"] + "&regionCode=US"
     totalcount=totalcount-1
+    print(totalcount)

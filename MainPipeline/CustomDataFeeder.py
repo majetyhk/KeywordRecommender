@@ -67,13 +67,14 @@ def main():
                 #now = json.loads(re)       $ viceversa string to dictionary
                 print("sending data to kafka"+str(file))
                 dataLoader.send(red)
-
+                textdir = "rm -r "+home+"/text/"+file
+                os.system(textdir)
         except Exception as e:
             print("No files found here!")
             raise e
 
-    textdir = "rm -R "+home+"/text/"     
-    os.system(textdir) #shutil.rmtree(home+"/text") 
+    #textdir = "rm -R "+home+"/text/"     
+    # s.system(textdir) #shutil.rmtree(home+"/text") 
 
 
 
