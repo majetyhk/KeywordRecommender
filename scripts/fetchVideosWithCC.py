@@ -18,21 +18,9 @@ else:
     print("please input in format -> python script.py 'token'")
     exit()
 
-######
-# - videos details - https://www.googleapis.com/youtube/v3/videos?id=Ks-_Mh1QhMc,c0KYU2j0TM4,eIho2S0ZahI&part=snippet,contentDetails,statistics,topicDetails&regionCode=US&key=APIKEY
-# channel - https://www.youtube.com/channel/UCsT0YIqwnpJCM-mx7-gSA4Q
-# search - https://www.googleapis.com/youtube/v3/search?key=APIKEY&channelId=UCsT0YIqwnpJCM-mx7-gSA4Q&part=snippet,id&order=date&maxResults=50
-# api doc - https://developers.google.com/youtube/v3/docs/videos/list
-# videos part popular - https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics%2CtopicDetails&chart=mostPopular&pageToken=&regionCode=US&key=APIKEY
-#####
-
-
-# first fetch videos from channel, pull the id of video and later do get request to video
-### url="https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics%2CtopicDetails&chart=mostPopular&pageToken=&regionCode=US&key="+api_token
-# max value range [0,50]
-## sample api - APIKEY, channelId- UCsT0YIqwnpJCM-mx7-gSA4Q
-outerurl="https://www.googleapis.com/youtube/v3/search?key="+api_token+"&type=video&videoCaption=closedCaption&regionCode=US"
+outerurl="https://www.googleapis.com/youtube/v3/search?key="+api_token+"&part=id&type=video&videoCaption=closedCaption&regionCode=US"
 innerurl="https://www.googleapis.com/youtube/v3/videos?id=Ks-_Mh1QhMc,c0KYU2j0TM4,eIho2S0ZahI&part=snippet,contentDetails,statistics,topicDetails&regionCode=US&key=APIKEY"
+print(outerurl)
 mylist = []
 mycounts = {}
 totalcount = (int(size)/5)
@@ -63,6 +51,7 @@ while(totalcount>0):
                 data['statistics'] = i["statistics"]
                 if 'topicDetails' in i:
                     data['topicDetails'] = i["topicDetails"]
+                print(data)
                 with open(home+'/videoJson/'+i["id"]+'.json', 'w') as outfile:
                     json.dump(data, outfile)
                 os.system("./extractor.sh "+i["id"])
@@ -70,6 +59,6 @@ while(totalcount>0):
         break
     if 'nextPageToken' not in jsonObj:
         break
-    outerurl = outerurl="https://www.googleapis.com/youtube/v3/search?key="+api_token+"&type=video&videoCaption=closedCaption&pageToken=" + \
+    outerurl = outerurl="https://www.googleapis.com/youtube/v3/search?key="+api_token+"&part=id&type=video&videoCaption=closedCaption&pageToken=" + \
           jsonObj["nextPageToken"] + "&regionCode=US"
     totalcount=totalcount-1
