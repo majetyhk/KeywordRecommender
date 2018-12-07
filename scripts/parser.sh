@@ -5,7 +5,6 @@ grep -v -- "-->" |\
 grep -v "^$" |\
 grep -E -v "^[0-9]+$" |\
 sed 's/WEBVTT//' |\
-tr '\n' ' ' |\
 tr -s ' ' |\
 tr -d '\t' |\
 sed 's/\\/\\\\/g' |\

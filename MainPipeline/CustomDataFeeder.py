@@ -3,6 +3,8 @@ import time
 import os
 import json
 import re
+import shutil
+
 from os.path import expanduser
 
 from kafka import KafkaProducer
@@ -58,7 +60,7 @@ def main():
                     meta = json.load(f)
 
                 loadObject['meta'] = meta
-                loadObject['extract'] = re.sub("[^a-zA-Z\s]", "", parsed)	#regex to retain just a-zA-Z and spaces in parsed string, to remove ',"
+                loadObject['extract'] = re.sub("[^a-zA-Z\s\n]", "", parsed)	#regex to retain just a-zA-Z and spaces in parsed string, to remove ',"
                 
                 red = repr(loadObject)     # converts dictionary to string
                 #now = json.loads(re)       $ viceversa string to dictionary
@@ -69,6 +71,8 @@ def main():
             print("No files found here!")
             raise e
 
+    textdir = "rm -R "+home+"/text/"     
+    os.system(textdir) #shutil.rmtree(home+"/text") 
 
 
 
