@@ -29,7 +29,7 @@ import time
 
 class SparkInstance:
     def __init__(self,AppName ="NLPApp"):
-        self.sparkSess = SparkSession.builder.appName("NLPApp").getOrCreate()
+        self.sparkSess = SparkSession.builder.master("spark://152.7.99.47:7077").appName("TopicModeling").getOrCreate()
         self.sc = self.sparkSess.sparkContext
         self.sqlContext = SQLContext(self.sc)
 
@@ -116,6 +116,7 @@ def main():
     DataReader = ConsumerInstance(kafkaBrokerList, topicNameList).getKafkaConsumer()
     print("Kafka Cluster Connected")
     sparkInst = SparkInstance()
+    sparkInst.sc.setLogLevel("WARN")
     print("Spark Cluster Connected")
     es = Elasticsearch(
         ['https://a58c0275b4c1417bb6316d68575d3f85.us-east-1.aws.found.io:9243'],
@@ -139,18 +140,20 @@ def main():
                         print("\n###################----------###################\n")
                         continue
                     print(subsMetaDict['meta'])
-                    topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, subsMetaDict['extract'])
-                    topKeywordsList = getTopKeywordsFromTopics(topicsWordArrayList)
-                    print(topKeywordsList)
-
                     doc = {}
                     doc['meta'] = subsMetaDict['meta']
-                    doc['keywords'] = topKeywordsList
                     metaDat = doc['meta']
                     ind = metaDat['id']
-                    # print(ind)
-                    res = es.index(index="keywordrecommender", doc_type='keywords', id = ind, body=doc)
-                    print(res['result'])
+                    if not es.exists(index="keywordrecommender", doc_type='keywords', id = ind):
+                        topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, subsMetaDict['extract'])
+                        topKeywordsList = getTopKeywordsFromTopics(topicsWordArrayList)
+                        print(topKeywordsList)
+                        doc['keywords'] = topKeywordsList
+                        # print(ind)
+                        res = es.index(index="keywordrecommender", doc_type='keywords', id = ind, body=doc)
+                        print(res['result'])
+                    else:
+                        print("Video already Processed. Skipping")
                     print("\n###################----------###################\n")
                     # count += 1
                     # if count > 2:
