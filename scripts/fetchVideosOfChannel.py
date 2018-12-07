@@ -11,6 +11,7 @@ size = 100
 inp = sys.argv
 if len(inp)==4:
     api_token=inp[1]
+    channel = inp[2]
     size = inp[3]
 elif len(inp)==3:
     api_token = inp[1]
@@ -45,6 +46,7 @@ while(totalcount>0):
     videoIds = ""
     if (r.status_code==200  or r.status_code == 304) and (len(jsonObj)!=0):
         for i in jsonObj["items"]:
+            if 'videoId' in i["id"]:
                 videoIds += i["id"]["videoId"] +","
         
         videoIds = videoIds[0:len(videoIds)-1]
@@ -55,6 +57,7 @@ while(totalcount>0):
         if (vr.status_code==200  or vr.status_code == 304) and (len(videojsonObj)!=0):
             for i in videojsonObj["items"]:
 #                if i["contentDetails"]["caption"] == "true":        ## compute only if capions are present
+                data['id'] = i["id"]
                 data['title'] = i["snippet"]["title"]
                 data['publishedAt'] = i["snippet"]["publishedAt"]
                 data['channelTitle'] = i["snippet"]["channelTitle"]
@@ -68,6 +71,8 @@ while(totalcount>0):
                     json.dump(data, outfile)
                 os.system("./extractor.sh "+i["id"])
     else:
+        break
+    if 'nextPageToken' not in jsonObj:
         break
     outerurl = outerurl="https://www.googleapis.com/youtube/v3/search?key="+api_token+"&channelId="+channel+"&part=id&order=date&maxResults=50&pageToken=" + \
           jsonObj["nextPageToken"] + "&regionCode=US"
