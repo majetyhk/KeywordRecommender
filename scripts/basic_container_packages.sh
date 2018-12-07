@@ -1,5 +1,5 @@
 
-echo "nameserver 8.8.8.8" | tee /etc/resolvconf/resolv.conf.d/base > /dev/null
+echo "nameserver 8.8.8.8" | tee /etc/resolv.conf > /dev/null
 
 apt-get update
 apt-get -y -qq install python3
