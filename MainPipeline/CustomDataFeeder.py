@@ -4,6 +4,8 @@ import os
 import json
 import re
 import shutil
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
 
 from os.path import expanduser
 
@@ -54,7 +56,7 @@ def main():
             if file.endswith(".txt"):
                 abspath = textpath+file
                 print(abspath)
-                with open(abspath) as f:
+                with open(abspath, 'r', encoding="utf-8") as f:
                     parsed = f.read()       #json.load(f)
                 
                 with open(metapath+file.split('.txt')[0]+'.json', 'r') as f:

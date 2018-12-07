@@ -134,7 +134,7 @@ def main():
                 try:
                     subsMetaDict = getSubsMetaFromRecord(record)
                 except:
-                    print("Error in Parsing input from Kafka "+record.value)
+                    print("Error in Parsing input from Kafka "+record.value.decode("utf-8"))
                     print("\n###################----------###################\n")
                     continue
                 print(subsMetaDict['meta'])
