@@ -39,11 +39,14 @@ while(totalcount>0):
                 if 'tags' in i["snippet"]:
                     data['tags'] = i["snippet"]["tags"]
                 data['statistics'] = i["statistics"]
-                data['topicDetails'] = i["topicDetails"]
+                if 'topicDetails' in i:
+                    data['topicDetails'] = i["topicDetails"]
                 with open(home+'/videoJson/'+i["id"]+'.json', 'w') as outfile:
                     json.dump(data, outfile)
                 os.system("./extractor.sh "+i["id"])
     else:
+        break
+    if 'nextPageToken' not in jsonObj:
         break
     url = "https://www.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics%2CtopicDetails&chart=mostPopular&pageToken=" + \
           jsonObj["nextPageToken"] + "&regionCode=US&key=" + api_token
