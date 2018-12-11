@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: popular-video-pod
+  labels:
+    app: keyword
+spec:
+  containers:
+  - name: popular-video
+    image: ubuntu
