@@ -8,3 +8,4 @@ apt-get install python3 python3-pip python-dev build-essential -y
 sudo -H pip install --upgrade youtube-dl
 
 bash "$HOME"/Keyword_Recommender/scripts/wrapper_setup.sh
+#pip install --upgrade youtube-dl

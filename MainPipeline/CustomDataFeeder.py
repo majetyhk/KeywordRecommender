@@ -4,6 +4,8 @@ import os
 import json
 import re
 import shutil
+#reload(sys)
+#sys.setdefaultencoding('utf-8')
 
 from os.path import expanduser
 
@@ -54,7 +56,7 @@ def main():
             if file.endswith(".txt"):
                 abspath = textpath+file
                 print(abspath)
-                with open(abspath) as f:
+                with open(abspath, 'r', encoding="utf-8") as f:
                     parsed = f.read()       #json.load(f)
                 
                 with open(metapath+file.split('.txt')[0]+'.json', 'r') as f:
@@ -67,13 +69,14 @@ def main():
                 #now = json.loads(re)       $ viceversa string to dictionary
                 print("sending data to kafka"+str(file))
                 dataLoader.send(red)
-
+                textdir = "rm -r "+home+"/text/"+file
+                os.system(textdir)
         except Exception as e:
             print("No files found here!")
             raise e
 
-    textdir = "rm -R "+home+"/text/"     
-    os.system(textdir) #shutil.rmtree(home+"/text") 
+    #textdir = "rm -R "+home+"/text/"     
+    # s.system(textdir) #shutil.rmtree(home+"/text") 
 
 
 

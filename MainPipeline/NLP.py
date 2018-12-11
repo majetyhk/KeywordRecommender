@@ -12,6 +12,7 @@ from pyspark.ml.clustering import LDA as newLDA
 import json
 from datetime import datetime
 from elasticsearch import Elasticsearch
+import time
 
 # data = sqlContext.read.format("csv").options(header='true', inferschema='true')\
 #       .load(os.path.realpath("clothingReviews.csv"))
@@ -28,7 +29,7 @@ from elasticsearch import Elasticsearch
 
 class SparkInstance:
     def __init__(self,AppName ="NLPApp"):
-        self.sparkSess = SparkSession.builder.appName("NLPApp").getOrCreate()
+        self.sparkSess = SparkSession.builder.master("spark://152.7.99.47:7077").appName("TopicModeling").getOrCreate()
         self.sc = self.sparkSess.sparkContext
         self.sqlContext = SQLContext(self.sc)
 
@@ -115,6 +116,7 @@ def main():
     DataReader = ConsumerInstance(kafkaBrokerList, topicNameList).getKafkaConsumer()
     print("Kafka Cluster Connected")
     sparkInst = SparkInstance()
+    sparkInst.sc.setLogLevel("WARN")
     print("Spark Cluster Connected")
     es = Elasticsearch(
         ['https://a58c0275b4c1417bb6316d68575d3f85.us-east-1.aws.found.io:9243'],
@@ -126,36 +128,40 @@ def main():
 
 
     try:
-        count = 0
-        for record in DataReader:
-            if(record):
-                # print(record.value)
-                # print(message)
-                try:
-                    subsMetaDict = getSubsMetaFromRecord(record)
-                except:
-                    print("Error in Parsing input from Kafka "+record.value)
+        while True:
+            for record in DataReader:
+                if(record):
+                    # print(record.value)
+                    # print(message)
+                    try:
+                        subsMetaDict = getSubsMetaFromRecord(record)
+                    except:
+                        print("Error in Parsing input from Kafka "+record.value.decode("utf-8"))
+                        print("\n###################----------###################\n")
+                        continue
+                    print(subsMetaDict['meta'])
+                    doc = {}
+                    doc['meta'] = subsMetaDict['meta']
+                    metaDat = doc['meta']
+                    ind = metaDat['id']
+                    if not es.exists(index="keywordrecommender", doc_type='keywords', id = ind):
+                        topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, subsMetaDict['extract'])
+                        topKeywordsList = getTopKeywordsFromTopics(topicsWordArrayList)
+                        print(topKeywordsList)
+                        doc['keywords'] = topKeywordsList
+                        # print(ind)
+                        res = es.index(index="keywordrecommender", doc_type='keywords', id = ind, body=doc)
+                        print(res['result'])
+                    else:
+                        print("Video already Processed. Skipping")
                     print("\n###################----------###################\n")
-                    continue
-                print(subsMetaDict['meta'])
-                topicsWordArrayList = getTopics(sparkInst.sc, sparkInst.sqlContext, subsMetaDict['extract'])
-                topKeywordsList = getTopKeywordsFromTopics(topicsWordArrayList)
-                print(topKeywordsList)
-
-                doc = {}
-                doc['meta'] = subsMetaDict['meta']
-                doc['keywords'] = topKeywordsList
-                metaDat = doc['meta']
-                ind = metaDat['id']
-                # print(ind)
-                res = es.index(index="keywordrecommender", doc_type='keywords', id = ind, body=doc)
-                print(res['result'])
-                print("\n###################----------###################\n")
-                # count += 1
-                # if count > 2:
-                #     break
-                # print(topicsWordArrayList)
-                # for message in DataReader.poll(max_records=1):
+                    # count += 1
+                    # if count > 2:
+                    #     break
+                    # print(topicsWordArrayList)
+                    # for message in DataReader.poll(max_records=1):
+            print("Buffer Empty. Wait for 10 min to try again")
+            time.sleep(600)
     except Exception as e:
         print("Error Occurred: "+str(e))
     finally:
